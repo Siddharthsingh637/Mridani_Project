@@ -1,0 +1,110 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const PricingMob = ({ cartItems }) => {
+    
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const navigate = useNavigate();
+
+  const totalMRP = cartItems.reduce(
+    (sum, item) => sum + item.product_detail.price * item.quantity,
+    0
+  );
+  const totalAfterDiscount = totalMRP - discount;
+
+  const handleApplyCoupon = (code) => {
+    if (code.toLowerCase() === "december") setDiscount(150);
+    else if (code.toLowerCase() === "lotita") setDiscount(100);
+    else setDiscount(0);
+  };
+
+  const handleCheckout = () => {
+    if (cartItems.length === 0) {
+      alert("Your cart is empty!");
+      return;
+    }
+
+    const productsToSend = cartItems.map((item) => ({
+      product_id: item.product_detail.id,
+      name: item.product_detail.product_title,
+      image_field: image_field?.[0] || "/placeholder.jpg", // ✅ Pass image properly
+      price: item.product_detail.price,
+      quantity: item.quantity,
+    }));
+
+    navigate("/buynow", { state: { products: productsToSend } });
+  };
+
+  return (
+    <div className="flex flex-col h-[60dvh] bg-white">
+      {/* Scrollable Content */}
+      <div className="overflow-y-auto px-4 pt-4 pb-28">
+        <h2 className="text-xl font-bold mb-4 border-b pb-2">My Cart</h2>
+
+        <div className="bg-green-100 text-green-800 text-sm font-medium px-4 py-2 rounded mb-4">
+          🎉 Yay! You’re eligible for FREE delivery
+        </div>
+
+        <div className="text-gray-700 space-y-2 mb-4">
+          <p className="flex justify-between">
+            <span>Total Products:</span>
+            <span>{cartItems.length}</span>
+          </p>
+          <p className="flex justify-between">
+            <span>Total MRP:</span>
+            <span>₹{totalMRP}</span>
+          </p>
+          {discount > 0 && (
+            <p className="flex justify-between text-green-600">
+              <span>Discount:</span>
+              <span>- ₹{discount}</span>
+            </p>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <h3 className="text-md font-semibold text-gray-800 mb-1">
+            Coupons for you
+          </h3>
+          <ul className="text-sm text-gray-600 space-y-1">
+            <li><span className="font-medium text-black">december</span> → 20% off 14 collections</li>
+            <li><span className="font-medium text-black">lotita</span> → 10% off No usage limits</li>
+          </ul>
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value)}
+            placeholder="Enter coupon code"
+            className="flex-1 px-3 py-2 border rounded"
+          />
+          <button
+            onClick={() => handleApplyCoupon(couponCode.trim())}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+
+      {/* Fixed Bottom Total + Checkout */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-4 shadow-md">
+        <div className="flex justify-between mb-3 text-lg font-semibold">
+          <span>Total:</span>
+          <span>₹{totalAfterDiscount}</span>
+        </div>
+        <button
+          onClick={handleCheckout}
+          className="w-full bg-black text-white py-3 rounded hover:bg-gray-800 transition"
+        >
+          Checkout Now
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default PricingMob;
